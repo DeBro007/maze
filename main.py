@@ -29,7 +29,23 @@ class GameSprite(pygame.sprite.Sprite):
     def show(self):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
-player = GameSprite(40, 420, 55, 90, r"images\player.png")
+
+class Player(GameSprite):
+    def __init__(self, x, y, width, height, image, speedx, speedy):
+        super().__init__(x, y, width, height, image)
+        self.speedx = speedx
+        self.speedy = speedy
+        self.direction = "right"
+        self.image_r = self.image 
+        self.image_l = pygame.transform.flip(self.image, True, False)
+
+
+    def update(self):
+        self.rect.x += self.speedx
+        self.rect.y += self.speedy
+
+
+player = Player(40, 420, 55, 90, r"images\player.png", 0, 0)
 enemy = GameSprite(825, 100, 81, 90, r"images\ghost.png")
 finish = GameSprite(825, 420, 88, 56, r"images\prize.png") 
 
@@ -65,9 +81,34 @@ while game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game = False
+        if level == 1:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
+                    player.speedx = 4
+                    player.direction = "right"
+                    player.image = player.image_r
+                if event.key == pygame.K_a:
+                    player.speedx = -4
+                    player.direction = "left"
+                    player.image = player.image_l
+                if event.key == pygame.K_w:
+                    player.speedy = -4
+                if event.key == pygame.K_s:
+                    player.speedy = 4
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_d:
+                    player.speedx = 0
+                if event.key == pygame.K_a:
+                    player.speedx = 0
+                if event.key == pygame.K_w:
+                    player.speedy = 0
+                if event.key == pygame.K_s:
+                    player.speedy = 0
+
     if level == 1:
         window.blit(fon, (0, 0))
         player.show()
+        player.update()
         enemy.show()
         finish.show()
         walls.draw(window)
