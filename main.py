@@ -14,6 +14,16 @@ FPS = 60
 fon = pygame.image.load(file_path(r"images\backgraund.png"))
 fon = pygame.transform.scale(fon, (WIN_WIDTH, WIN_HEIGHT))
 
+image_win = pygame.image.load(file_path(r"images\win.png"))
+image_win = pygame.transform.scale(image_win, (WIN_WIDTH, WIN_HEIGHT))
+
+image_lose = pygame.image.load(file_path(r"images\ghost.png"))
+image_lose = pygame.transform.scale(image_lose, (WIN_WIDTH, WIN_HEIGHT))
+
+pygame.mixer.music.load(file_path(r"musics\music.mp3"))
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.25)
+
 
 window = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
@@ -43,14 +53,34 @@ class Player(GameSprite):
     def update(self):
         if self.speedx < 0 and self.rect.left > 0 or self.speedx > 0 and self.rect.right < WIN_WIDTH:
             self.rect.x += self.speedx
-        elif self.speedy < 0 and self.rect.top > 0 or self.speedy > 0 and self.rect.bottom < WIN_HEIGHT:
+        walls_touched = pygame.sprite.spritecollide(self, walls, False)
+        if self.speedx < 0:
+            for wall in walls_touched:
+                self.rect.left = max(self.rect.left, wall.rect.right)
+        elif self.speedx > 0:
+            for wall in walls_touched:
+                self.rect.right = min(self.rect.right, wall.rect.left)
+                
+
+        if self.speedy < 0 and self.rect.top > 0 or self.speedy > 0 and self.rect.bottom < WIN_HEIGHT:
             self.rect.y += self.speedy
+        walls_touched = pygame.sprite.spritecollide(self, walls, False)
+        if self.speedy < 0:
+            for wall in walls_touched:
+                self.rect.top = max(self.rect.top, wall.rect.bottom)
+        elif self.speedy > 0:
+            for wall in walls_touched:
+                self.rect.bottom = min(self.rect.bottom, wall.rect.top)
         
 
 
 player = Player(40, 420, 55, 90, r"images\player.png", 0, 0)
-enemy = GameSprite(825, 100, 81, 90, r"images\ghost.png")
+
 finish = GameSprite(825, 420, 88, 56, r"images\prize.png") 
+
+enemy = GameSprite(825, 100, 81, 90, r"images\ghost.png")
+enemy2 = GameSprite(210, 160, 81, 90, r"images\ghost.png")
+enemy3 = GameSprite(600, 425, 81, 90, r"images\ghost.png")
 
 walls = pygame.sprite.Group()
 wall1 = GameSprite(174, 516, 576, 24, r"images\wall.png")
@@ -113,8 +143,23 @@ while game:
         player.show()
         player.update()
         enemy.show()
+        enemy2.show()
+        enemy3.show()
         finish.show()
         walls.draw(window)
+
+        if pygame.sprite.collide_rect(player, finish):
+            level = 10
+            pygame.mixer.music.load(file_path(r"musics\win.mp3"))
+            pygame.mixer.music.play()
+            pygame.mixer.music.set_volume(0.25)
+
+    elif level == 10:
+        window.blit(image_win, (0, 0))
+        
+
+    elif level == 11:
+        window.blit(image_lose, (0, 0))
 
     clock.tick(FPS)
     pygame.display.update()
